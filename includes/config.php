@@ -1,7 +1,7 @@
 <?php
 $db_user = 'root';
 $db_password = 'framboise';
-$db_name = 'test_rest_api';
+$db_name = 'articles_blog';
 
 $db = new PDO('mysql:host=127.0.0.1; dbname=' . $db_name . ';charset=utf8', $db_user, $db_password);
 

@@ -1,18 +1,18 @@
 <?php
 // this represents my model wich is the mapping of my database
-class Post{
+class Article{
   //db stuff
   private $conn;
-  private $table = 'posts';
+  private $table = 'article';
 
   //post properties
   public $id;
   public $category_id;
   public $category_name;
   public $title;
-  public $body;
-  public $author;
-  public $create_at;
+  public $imageURL;
+  public $content;
+  public $created_at;
 
   //constructor with db connection
   public function __construct($db){
