@@ -9,13 +9,11 @@ $container = new Container();
 
 // Configurer les dépendances
 
-// Exemple de configuration d'une dépendance pour la classe Post
+// Configuration d'une dépendance pour la classe Post
 $container->set('Post', function (ContainerInterface $container) {
     $db = $container->get('db');
     return new Article($db);
 });
-
-// Ajoutez d'autres configurations de dépendances selon vos besoins
 
 // Retournez le conteneur
 return $container;

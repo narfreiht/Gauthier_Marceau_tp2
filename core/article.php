@@ -1,11 +1,11 @@
 <?php
-// this represents my model wich is the mapping of my database
+// Définition d'un article
 class Article{
-  //db stuff
+  
   private $conn;
   private $table = 'article';
 
-  //post properties
+  //Les propriétés de l'article
   public $id;
   public $category_id;
   public $category_name;
@@ -14,47 +14,71 @@ class Article{
   public $content;
   public $created_at;
 
-  //constructor with db connection
+  //constructeur
   public function __construct($db){
     $this->conn = $db;
   }
 
-  //getting posts from our database
+  // Création d'un article
+  public function create($category_id, $title, $imageURL, $content){
+    //Requête
+    $query = 'INSERT INTO ' . $this->table . '(`category_id`, `title`, `imageURL`, `content`)
+        VALUES(
+        :category_id,
+        :title,
+        :imageURL,
+        :content)';
+
+    // Préparation des informations de la requête
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':category_id', $category_id);
+    $stmt->bindParam(':title', $title);
+    $stmt->bindParam(':imageURL', $imageURL);
+    $stmt->bindParam(':content', $content);
+
+    // Execute la requête
+    if ($stmt->execute()) {
+        return true;
+    } else {
+        return false;
+    }
+  }
+
+  //Lecture des articles
   public function read(){
-    //create query
+    //Requête
     $query = 'SELECT
       c.name as category_name,
       p.id,
       p.category_id,
       p.title,
-      p.body,
-      p.author,
+      p.imageURL,
+      p.content,
       p.created_at
       FROM
       ' . $this->table . ' p 
       LEFT JOIN
-      categories c ON p.category_id = c.id ORDER BY p.created_at DESC';
+      categorie c ON p.category_id = c.id ORDER BY p.created_at DESC';
 
-      //prepare statement
+      // Préparation des informations de la requête
       $stmt = $this->conn->prepare($query);
 
-      // execute query
+      // Execute la requête
       $stmt->execute();
       
       return $stmt;
   }
 
-  public function delete($id){
-        // Create query
+    //Suppression d'un article
+    public function delete($id){
+        //Requête
         $query = 'DELETE FROM ' . $this -> table . ' WHERE id = :id';
-    
-        // Prepare statement
+
+        // Préparation des informations de la requête
         $stmt = $this->conn->prepare($query);
-    
-        // Bind parameter
         $stmt->bindParam(':id', $id);
-    
-        // Execute query
+
+        // Execute la requête
         if ($stmt->execute()) {
             return true;
         } else {
@@ -62,20 +86,20 @@ class Article{
         }
     }
 
-        
-    public function update($id, $title, $body){
-        // Create query
-        $query = 'UPDATE ' . $this->table . ' SET title = :title, body = :body WHERE id = :id';
+    //Mise à jour d'un article
+    public function update($id, $title, $content){
+        //Requête
+        $query = 'UPDATE ' . $this->table . ' SET title = :title, content = :content WHERE id = :id';
 
-        // Prepare statement
+        // Préparation des informations de la requête
         $stmt = $this->conn->prepare($query);
 
         // Bind parameters
         $stmt->bindParam(':id', $id);
         $stmt->bindParam(':title', $title);
-        $stmt->bindParam(':body', $body);
+        $stmt->bindParam(':content', $content);
 
-        // Execute query
+        // Execute la requête
         if ($stmt->execute()) {
             return true;
         } else {
@@ -83,18 +107,17 @@ class Article{
         }
     }
 
+    //Mise à jour d'un titre d'article
     public function update_title($id, $title){
-        // Create query
+        //Requête
         $query = 'UPDATE ' . $this->table . ' SET title = :title WHERE id = :id';
 
-        // Prepare statement
+        // Préparation des informations de la requête
         $stmt = $this->conn->prepare($query);
-
-        // Bind parameters
         $stmt->bindParam(':id', $id);
         $stmt->bindParam(':title', $title);
 
-        // Execute query
+        // Execute la requête
         if ($stmt->execute()) {
             return true;
         } else {

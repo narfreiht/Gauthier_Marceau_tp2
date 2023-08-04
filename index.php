@@ -22,15 +22,43 @@ $app = AppFactory::create(null, $container);
 // Activation de la surcharge de méthode (dans le cas de DELETE)
 $app -> addRoutingMiddleware();
 $app -> add(MethodOverrideMiddleware::class);
-
+ 
 // Ajout du middleware de parsing du corps des requêtes
 $app -> addBodyParsingMiddleware();
+
+
+// Définition d'une route pour créer un article
+$app -> post('/api/post/create', function (Request $request, Response $response, array $args) use ($db) {
+
+ // Récupération des données de création de l'article depuis le corps de la requête
+ $data = $request->getParsedBody();
+ $category_id = $data['category_id'] ?? '';
+ $title = $data['title'] ?? '';
+ $imageURL = $data['imageURL'] ?? '';
+ $content = $data['content'] ?? '';
+ 
+ // Instance du modèle de l'article
+ $post = new Article($db);
+
+   // Création à l'aide du modèle
+   if ($post -> create($category_id, $title, $imageURL, $content)) {
+       // Succès
+       $data = ['message' => 'Post created successfully'];
+       $response -> getBody() -> write(json_encode($data));
+       return $response -> withHeader('Content-Type', 'application/json') -> withStatus(201);
+   } else {
+       // Erreur
+       $data = ['message' => 'Failed to create new post'];
+       $response->getBody() -> write(json_encode($data));
+       return $response -> withHeader('Content-Type', 'application/json') -> withStatus(500);
+   }
+});
 
 // Définition d'une route pour récupérer les articles
 $app -> get('/api/posts', function (Request $request, Response $response, array $args) use ($db) {
 
-  // Instantiate the post model and pass the database connection
-  $post = new Post($db);
+  // Instance du modèle de l'article
+  $post = new Article($db);
 
   // Récupération des articles depuis la base de donnée
   $result = $post -> read();
@@ -38,7 +66,6 @@ $app -> get('/api/posts', function (Request $request, Response $response, array 
   // Vérification si des articles ont été trouvés
   if ($result -> rowCount() > 0) {
     $posts = $result -> fetchAll(PDO::FETCH_ASSOC);
-
     // Retour des articles en tant que réponse JSON
     $response -> getBody() -> write(json_encode($posts));
     return $response -> withHeader('Content-Type', 'application/json') -> withStatus(200);
@@ -50,11 +77,11 @@ $app -> get('/api/posts', function (Request $request, Response $response, array 
 });
 
 // Définition d'une route pour supprimer un article
-$app -> delete('/api/article/delete/{id}', function (Request $request, Response $response, $args) use ($db) {
-  // Get the post ID from the URL
+$app -> delete('/api/post/delete/{id}', function (Request $request, Response $response, $args) use ($db) {
+  //Récupération de l'information envoyé dans l'URL
   $id = $args['id'];
 
-  // Instantiation du modèle Post en passant la connexion à la base de données
+  // Instance du modèle de l'article
   $post = new Article($db);
 
   // Suppression de l'article
@@ -83,16 +110,16 @@ $app -> put('/api/post/update/{id}', function (Request $request, Response $respo
   $body = $data['body'] ?? '';
 
   // Instantiation du modèle Post en passant la connexion à la base de données
-  $post = new Post($db);
+  $post = new Article($db);
 
-  // Update the post
+  // Mise à jour the post
   if ($post -> update($id, $title, $body)) {
-      // Return a success JSON response
+      // Retour d'une réponse JSON de succès
       $data = ['message' => 'Post updated successfully'];
       $response -> getBody() -> write(json_encode($data));
       return $response -> withHeader('Content-Type', 'application/json') -> withStatus(200);
   } else {
-      // Return an error JSON response
+      // Retour d'une réponse JSON d'erreur
       $data = ['message' => 'Failed to update post'];
       $response->getBody() -> write(json_encode($data));
       return $response -> withHeader('Content-Type', 'application/json') -> withStatus(500);
@@ -100,25 +127,25 @@ $app -> put('/api/post/update/{id}', function (Request $request, Response $respo
 });
 
 $app -> patch('/api/post/update_title/{id}', function (Request $request, Response $response, $args) use ($db) {
-  // Get the post ID from the URL
+  // Récupération de l'ID de l'article depuis l'URL
   $id = $args['id'];
 
-  // Get the updated post data from the request body
+  // Récupération des données mises à jour de l'article depuis le corps de la requête
   $data = $request -> getParsedBody();
   $title = $data['title'] ?? '';
  
 
-  // Instantiate the Post model and pass the database connection
-  $post = new Post($db);
+  // Instantiation du modèle Post en passant la connexion à la base de données
+  $post = new Article($db);
 
-  // Update the post
+  // Mise à jour the post
   if ($post -> update_title($id, $title)) {
-      // Return a success JSON response
+      // Retour d'une réponse JSON de succès
       $data = ['message' => 'Post title updated successfully'];
       $response -> getBody() -> write(json_encode($data));
       return $response->withHeader('Content-Type', 'application/json') -> withStatus(200);
   } else {
-      // Return an error JSON response
+      // Retour d'une réponse JSON d'erreur
       $data = ['message' => 'Failed to update title of the post'];
       $response -> getBody() -> write(json_encode($data));
       return $response->withHeader('Content-Type', 'application/json') -> withStatus(500);
@@ -127,6 +154,4 @@ $app -> patch('/api/post/update_title/{id}', function (Request $request, Respons
 
 // Run the Slim app
 $app -> run();
-
-      // "slim/http": "^0.4.0"
 ?>
