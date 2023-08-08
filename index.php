@@ -107,13 +107,13 @@ $app -> put('/api/post/update/{id}', function (Request $request, Response $respo
   // Récupération des données mises à jour de l'article depuis le corps de la requête
   $data = $request->getParsedBody();
   $title = $data['title'] ?? '';
-  $body = $data['body'] ?? '';
+  $content = $data['content'] ?? '';
 
   // Instantiation du modèle Post en passant la connexion à la base de données
   $post = new Article($db);
 
   // Mise à jour the post
-  if ($post -> update($id, $title, $body)) {
+  if ($post -> update($id, $title, $content)) {
       // Retour d'une réponse JSON de succès
       $data = ['message' => 'Post updated successfully'];
       $response -> getBody() -> write(json_encode($data));
